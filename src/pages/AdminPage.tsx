@@ -2,7 +2,6 @@ import React from "react";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { formatCurrency, formatDate } from "@/lib/format";
 import { TrendingUp, ShoppingBag, AlertTriangle, PieChart, Clock } from "lucide-react";
@@ -29,7 +28,7 @@ export function AdminPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12 animate-fade-in space-y-10 pb-20">
       <div>
         <h1 className="text-5xl font-black tracking-tighter uppercase text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground font-medium">Vue d'ensemble de la performance de votre point de vente.</p>
+        <p className="text-muted-foreground font-medium">Analyse de performance en temps réel.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {cards.map((card, i) => (
@@ -50,20 +49,20 @@ export function AdminPage() {
         <Card className="lg:col-span-8 border-none shadow-soft rounded-[2.5rem] bg-card/50 overflow-hidden">
           <CardHeader className="bg-muted/30 pb-6 border-b">
             <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" /> Top 5 des volumes de vente
+              <TrendingUp className="h-5 w-5 text-primary" /> Top 5 Ventes (Volume)
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-[450px] w-full pt-10">
+          <CardContent className="h-[450px] w-full pt-10 px-6">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} layout="vertical" margin={{ left: 30, right: 60 }}>
+              <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 40 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} strokeOpacity={0.1} />
                 <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={120} fontSize={12} fontWeight="bold" />
+                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={130} fontSize={11} fontWeight="bold" />
                 <Tooltip 
                   cursor={{ fill: 'rgba(0,0,0,0.02)' }}
                   contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
                 />
-                <Bar dataKey="qty" radius={[0, 12, 12, 0]} barSize={40} animationDuration={1500}>
+                <Bar dataKey="qty" radius={[0, 12, 12, 0]} barSize={35}>
                   {chartData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
@@ -80,14 +79,14 @@ export function AdminPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="divide-y max-h-[350px] overflow-y-auto">
-                {lowStockProducts.slice(0, 8).map((p) => (
+              <div className="divide-y max-h-[400px] overflow-y-auto custom-scrollbar">
+                {lowStockProducts.map((p) => (
                   <div key={p._id} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
                     <div className="flex items-center gap-3">
                       <span className="text-3xl select-none">{p.emoji}</span>
                       <div>
                         <p className="font-black text-sm leading-tight text-foreground">{p.name}</p>
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Min: {p.minStockThreshold}</p>
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">{p.category}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -103,7 +102,7 @@ export function AdminPage() {
                 {lowStockCount === 0 && (
                   <div className="p-16 text-center text-muted-foreground italic flex flex-col items-center gap-3">
                     <div className="h-12 w-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">✨</div>
-                    <p className="font-bold">Stock impeccable !</p>
+                    <p className="font-bold">Tout est en stock !</p>
                   </div>
                 )}
               </div>
@@ -133,12 +132,13 @@ export function AdminPage() {
                   <tr key={t._id} className="hover:bg-muted/20 h-16 transition-colors">
                     <td className="px-6 text-sm font-bold text-foreground">{formatDate(t.timestamp)}</td>
                     <td className="px-6 text-xs font-medium text-muted-foreground">
-                      {t.items.map(i => `${i.quantity}x ${i.name}`).join(", ")}
+                      {t.items.slice(0, 3).map(i => `${i.quantity}x ${i.name}`).join(", ")}
+                      {t.items.length > 3 && " ..."}
                     </td>
                     <td className="px-6">
-                      <Badge variant="outline" className="font-black uppercase text-[9px] tracking-widest">
+                      <span className="px-2 py-1 rounded bg-secondary text-[9px] font-black uppercase tracking-widest border">
                         {t.method}
-                      </Badge>
+                      </span>
                     </td>
                     <td className="px-6 text-right font-black text-primary text-lg">{formatCurrency(t.total)}</td>
                   </tr>

@@ -23,7 +23,10 @@ export function StockPage() {
   const [isAdjustOpen, setIsAdjustOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<any>(null);
-  const filtered = products?.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())) ?? [];
+  const filtered = products?.filter(p => 
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.category.toLowerCase().includes(searchTerm.toLowerCase())
+  ) ?? [];
   const handleAdjust = async (isAdding: boolean) => {
     if (!selectedProduct) return;
     const qty = parseInt(adjustValue);
@@ -77,7 +80,7 @@ export function StockPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black tracking-tight text-foreground">Inventaire</h1>
-          <p className="text-muted-foreground mt-1">Gérez vos produits et surveillez vos niveaux de stock.</p>
+          <p className="text-muted-foreground mt-1">Gérez vos {products.length} produits et surveillez vos niveaux de stock.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Button variant="outline" onClick={exportToCSV} className="rounded-xl h-11 px-6">
@@ -88,16 +91,14 @@ export function StockPage() {
           </Button>
         </div>
       </div>
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Rechercher par nom..." 
-            className="pl-10 h-12 bg-secondary/50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Rechercher par nom ou catégorie..."
+          className="pl-10 h-12 bg-secondary/50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </div>
       <div className="bg-card border shadow-soft rounded-3xl overflow-hidden overflow-x-auto">
         <Table>
@@ -120,7 +121,9 @@ export function StockPage() {
                   <TableCell className="text-3xl text-center select-none">{product.emoji}</TableCell>
                   <TableCell className="font-bold text-foreground">{product.name}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className="font-medium bg-secondary text-secondary-foreground">{product.category}</Badge>
+                    <Badge variant="outline" className="font-medium bg-secondary/50 text-secondary-foreground border-none">
+                      {product.category}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-right font-mono font-bold text-primary">{formatCurrency(product.price)}</TableCell>
                   <TableCell className="text-center font-black text-lg">{product.stock}</TableCell>
@@ -141,14 +144,14 @@ export function StockPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="rounded-xl w-48 shadow-lg">
-                        <DropdownMenuItem onClick={() => { setSelectedProduct(product); setIsAdjustOpen(true); }} className="p-3 gap-2">
+                        <DropdownMenuItem onClick={() => { setSelectedProduct(product); setIsAdjustOpen(true); }} className="p-3 gap-2 cursor-pointer">
                           <Plus className="h-4 w-4 text-emerald-500" /> Ajuster Stock
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => { setEditProduct(product); setIsFormOpen(true); }} className="p-3 gap-2">
+                        <DropdownMenuItem onClick={() => { setEditProduct(product); setIsFormOpen(true); }} className="p-3 gap-2 cursor-pointer">
                           <Edit className="h-4 w-4 text-indigo-500" /> Modifier
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleDelete(product._id)} className="p-3 gap-2 text-rose-500 focus:bg-rose-50">
+                        <DropdownMenuItem onClick={() => handleDelete(product._id)} className="p-3 gap-2 text-rose-500 focus:bg-rose-50 cursor-pointer">
                           <Trash2 className="h-4 w-4" /> Supprimer
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -177,10 +180,10 @@ export function StockPage() {
           <div className="py-6 space-y-4">
             <div className="flex flex-col gap-2">
               <Label htmlFor="qty" className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Quantité d'ajustement</Label>
-              <Input 
-                id="qty" 
-                type="number" 
-                value={adjustValue} 
+              <Input
+                id="qty"
+                type="number"
+                value={adjustValue}
                 onChange={(e) => setAdjustValue(e.target.value)}
                 className="h-14 text-2xl font-black text-center rounded-xl"
               />

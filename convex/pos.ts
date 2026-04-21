@@ -10,12 +10,7 @@ export const createProduct = mutation({
   args: {
     name: v.string(),
     emoji: v.string(),
-    category: v.union(
-      v.literal("Repas"),
-      v.literal("Boissons"),
-      v.literal("Desserts"),
-      v.literal("Snacks")
-    ),
+    category: v.string(),
     price: v.number(), // En centimes
     stock: v.number(),
     minStockThreshold: v.number(),
@@ -30,12 +25,7 @@ export const updateProduct = mutation({
     updates: v.object({
       name: v.optional(v.string()),
       emoji: v.optional(v.string()),
-      category: v.optional(v.union(
-        v.literal("Repas"),
-        v.literal("Boissons"),
-        v.literal("Desserts"),
-        v.literal("Snacks")
-      )),
+      category: v.optional(v.string()),
       price: v.optional(v.number()),
       stock: v.optional(v.number()),
       minStockThreshold: v.optional(v.number()),
@@ -92,12 +82,12 @@ export const checkout = mutation({
       items: saleItems,
       timestamp: Date.now(),
     });
-    return { 
-      transactionId, 
-      items: saleItems, 
-      method: args.method, 
-      total: args.total, 
-      timestamp: Date.now() 
+    return {
+      transactionId,
+      items: saleItems,
+      method: args.method,
+      total: args.total,
+      timestamp: Date.now()
     };
   },
 });

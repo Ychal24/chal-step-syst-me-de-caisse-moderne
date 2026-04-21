@@ -5,12 +5,7 @@ const applicationTables = {
   products: defineTable({
     name: v.string(),
     emoji: v.string(),
-    category: v.union(
-      v.literal("Repas"),
-      v.literal("Boissons"),
-      v.literal("Desserts"),
-      v.literal("Snacks")
-    ),
+    category: v.string(),
     price: v.number(), // En centimes
     stock: v.number(),
     minStockThreshold: v.number(),
