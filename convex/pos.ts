@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { Doc, Id } from "./_generated/dataModel";
 export const getProducts = query({
   args: {},
   handler: async (ctx) => {
@@ -18,12 +19,10 @@ export const getSellers = query({
 export const verifyPin = mutation({
   args: { pin: v.string() },
   handler: async (ctx, args) => {
-    // Vérifier d'abord le PIN Admin
     const settings = await ctx.db.query("settings").withIndex("by_key", q => q.eq("key", "admin_config")).unique();
     if (settings && settings.adminPin === args.pin) {
       return { role: "admin" as const, sellerId: null };
     }
-    // Vérifier les PIN des vendeurs
     const seller = await ctx.db.query("sellers")
       .withIndex("by_pin", q => q.eq("pin", args.pin))
       .filter(q => q.eq(q.field("active"), true))
@@ -95,16 +94,13 @@ export const checkout = mutation({
 export const getTransactions = query({
   args: { limit: v.optional(v.number()), sellerId: v.optional(v.id("sellers")) },
   handler: async (ctx, args) => {
-    let transactions;
-    if (args.sellerId) {
-      transactions = await ctx.db.query("transactions")
-        .withIndex("by_sellerId", (q) => q.eq("sellerId", args.sellerId!))
-        .take(args.limit ?? 50);
-    } else {
-      transactions = await ctx.db.query("transactions")
-        .order("desc")
-        .take(args.limit ?? 50);
-    }
+    const transactions = args.sellerId 
+      ? await ctx.db.query("transactions")
+          .withIndex("by_sellerId", (q) => q.eq("sellerId", args.sellerId!))
+          .take(args.limit ?? 50)
+      : await ctx.db.query("transactions")
+          .order("desc")
+          .take(args.limit ?? 50);
     return await Promise.all(transactions.map(async (t) => {
       const seller = await ctx.db.get(t.sellerId);
       return { ...t, sellerName: seller?.name ?? "Inconnu" };

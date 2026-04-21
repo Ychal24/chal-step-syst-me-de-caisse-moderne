@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +22,13 @@ export function AdminPage() {
   });
   const createSeller = useMutation(api.pos.createSeller);
   const updateSeller = useMutation(api.pos.updateSeller);
+  const sellerChartData = useMemo(() => {
+    if (!stats?.sellerPerformance) return [];
+    return stats.sellerPerformance.map(p => ({
+      name: p.name,
+      val: p.revenue / 100
+    }));
+  }, [stats]);
   if (userRole !== 'admin') {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-center p-8">
@@ -33,13 +40,17 @@ export function AdminPage() {
       </div>
     );
   }
-  if (!stats) return <div className="max-w-7xl mx-auto p-12">Chargement de l'analytics...</div>;
+  if (!stats) return <div className="max-w-7xl mx-auto p-12 text-center font-bold">Chargement de l'analytics...</div>;
   const lowStockProducts = products?.filter(p => p.stock <= p.minStockThreshold) ?? [];
   const lowStockCount = lowStockProducts.length;
   const handleAddSeller = async () => {
     const name = prompt("Nom du nouveau vendeur :");
     const pin = prompt("Définir un code PIN (4 chiffres) :");
     if (name && pin) {
+      if (pin.length !== 4 || isNaN(Number(pin))) {
+        toast.error("Le code PIN doit être composé de 4 chiffres.");
+        return;
+      }
       await createSeller({ name, active: true, pin });
       toast.success("Vendeur ajouté");
     }
@@ -48,20 +59,17 @@ export function AdminPage() {
     await updateSeller({ id, updates: { active: !currentStatus } });
     toast.info("Statut mis à jour");
   };
+  const averageBasket = stats.dailyTransactions > 0 ? stats.dailyRevenue / stats.dailyTransactions : 0;
   const cards = [
     { title: "CA Aujourd'hui", value: formatCurrency(stats.dailyRevenue), icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
     { title: "Transactions", value: stats.dailyTransactions, icon: ShoppingBag, color: "text-indigo-500", bg: "bg-indigo-500/10" },
     { title: "Alertes Stock", value: lowStockCount, icon: AlertTriangle, color: "text-rose-500", bg: "bg-rose-500/10" },
-    { title: "Moyen / Panier", value: stats.dailyTransactions > 0 ? formatCurrency(stats.dailyRevenue / stats.dailyTransactions) : "0,00 DH", icon: PieChart, color: "text-amber-500", bg: "bg-amber-500/10" },
+    { title: "Moyen / Panier", value: formatCurrency(averageBasket), icon: PieChart, color: "text-amber-500", bg: "bg-amber-500/10" },
   ];
-  const sellerChartData = stats.sellerPerformance.map(p => ({
-    name: p.name,
-    val: p.revenue / 100
-  }));
   const COLORS = ['#10b981', '#6366f1', '#f59e0b', '#f43f5e', '#8b5cf6', '#ec4899', '#06b6d4'];
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12 animate-fade-in space-y-10 pb-20">
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h1 className="text-5xl font-black tracking-tighter uppercase text-foreground">Dashboard</h1>
           <p className="text-muted-foreground font-medium">Analyse de performance en temps réel.</p>
@@ -89,27 +97,31 @@ export function AdminPage() {
         <Card className="lg:col-span-8 border-none shadow-soft rounded-[2.5rem] bg-card/50 overflow-hidden">
           <CardHeader className="bg-muted/30 pb-6 border-b flex flex-row items-center justify-between">
             <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
-              <Users className="h-5 w-5 text-indigo-500" /> Chiffre d'Affaires par Vendeur
+              <Users className="h-5 w-5 text-indigo-500" /> Performance Staff
             </CardTitle>
           </CardHeader>
           <CardContent className="h-[450px] w-full pt-10 px-6">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={sellerChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.1} />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={12} fontWeight="bold" />
-                <YAxis axisLine={false} tickLine={false} fontSize={12} fontWeight="bold" tickFormatter={(v) => `${v} DH`} />
-                <Tooltip
-                  cursor={{ fill: 'rgba(0,0,0,0.02)' }}
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
-                  formatter={(v: number) => [`${v.toFixed(2)} DH`, 'Chiffre d\'affaires']}
-                />
-                <Bar dataKey="val" radius={[12, 12, 0, 0]} barSize={50}>
-                  {sellerChartData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            {sellerChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={sellerChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.1} />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={12} fontWeight="bold" />
+                  <YAxis axisLine={false} tickLine={false} fontSize={12} fontWeight="bold" tickFormatter={(v) => `${v} DH`} />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
+                    formatter={(v: number) => [`${v.toFixed(2)} DH`, 'CA']}
+                  />
+                  <Bar dataKey="val" radius={[12, 12, 0, 0]} barSize={50}>
+                    {sellerChartData.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-muted-foreground italic">Aucune donnée disponible</div>
+            )}
           </CardContent>
         </Card>
         <div className="lg:col-span-4 space-y-8">
@@ -154,24 +166,25 @@ export function AdminPage() {
                     <span className={cn("font-black text-xl tabular-nums", p.stock === 0 ? 'text-rose-500' : 'text-amber-500')}>{p.stock}</span>
                   </div>
                 ))}
+                {lowStockCount === 0 && <div className="p-8 text-center text-xs text-muted-foreground italic">Aucune alerte</div>}
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
       <Card className="border shadow-soft rounded-[2.5rem] overflow-hidden">
-        <CardHeader className="bg-indigo-500 text-white pb-6 flex flex-row items-center justify-between space-y-0">
+        <CardHeader className="bg-indigo-500 text-white pb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <CardTitle className="text-xl font-black uppercase flex items-center gap-2">
             <Clock className="h-5 w-5" /> Transactions Récentes
           </CardTitle>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase">Filtrer par :</span>
+            <span className="text-[10px] font-black uppercase">Filtre :</span>
             <select
               value={selectedSellerFilter}
               onChange={(e) => setSelectedSellerFilter(e.target.value)}
               className="bg-white/20 border-none rounded-lg text-xs font-bold px-3 py-1 outline-none text-white cursor-pointer"
             >
-              <option value="all" className="text-black">Tous les vendeurs</option>
+              <option value="all" className="text-black">Tous</option>
               {sellers?.map(s => <option key={s._id} value={s._id} className="text-black">{s.name}</option>)}
             </select>
           </div>
@@ -205,6 +218,11 @@ export function AdminPage() {
                     <td className="px-6 text-right font-black text-primary text-lg">{formatCurrency(t.total)}</td>
                   </tr>
                 ))}
+                {(!transactions || transactions.length === 0) && (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-muted-foreground italic">Aucune transaction</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

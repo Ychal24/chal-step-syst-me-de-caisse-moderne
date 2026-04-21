@@ -16,6 +16,7 @@ interface CartState {
   updateQuantity: (productId: Id<"products">, delta: number) => void;
   clearCart: () => void;
   setSellerId: (sellerId: Id<"sellers"> | null) => void;
+  resetCart: () => void;
 }
 export const useCartStore = create<CartState>((set) => ({
   items: [],
@@ -57,4 +58,5 @@ export const useCartStore = create<CartState>((set) => ({
   })),
   clearCart: () => set({ items: [] }),
   setSellerId: (sellerId) => set({ selectedSellerId: sellerId }),
+  resetCart: () => set({ items: [], selectedSellerId: null }),
 }));

@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { UtensilsCrossed, Delete, XCircle, Lock } from "lucide-react";
+import { UtensilsCrossed, Delete, Lock } from "lucide-react";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 export function LoginPage() {
   const [pin, setPin] = useState("");
@@ -14,21 +14,21 @@ export function LoginPage() {
   const verifyPin = useMutation(api.pos.verifyPin);
   const login = useAuthStore(s => s.login);
   const navigate = useNavigate();
-  const handlePress = (val: string) => {
+  const handlePress = useCallback((val: string) => {
     if (pin.length < 4) {
       setPin(prev => prev + val);
       setIsError(false);
     }
-  };
-  const handleDelete = () => {
+  }, [pin.length]);
+  const handleDelete = useCallback(() => {
     setPin(prev => prev.slice(0, -1));
     setIsError(false);
-  };
-  const handleClear = () => {
+  }, []);
+  const handleClear = useCallback(() => {
     setPin("");
     setIsError(false);
-  };
-  const handleSubmit = async () => {
+  }, []);
+  const handleSubmit = useCallback(async () => {
     if (pin.length < 4) return;
     try {
       const result = await verifyPin({ pin });
@@ -44,16 +44,16 @@ export function LoginPage() {
     } catch (e) {
       toast.error("Erreur de connexion");
     }
-  };
-  React.useEffect(() => {
+  }, [pin, verifyPin, login, navigate]);
+  useEffect(() => {
     if (pin.length === 4) {
       handleSubmit();
     }
-  }, [pin]);
+  }, [pin, handleSubmit]);
   const numpad = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", "DEL"];
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md space-y-8"
@@ -75,8 +75,8 @@ export function LoginPage() {
                 animate={isError ? { x: [0, -10, 10, -10, 10, 0] } : {}}
                 className={cn(
                   "h-5 w-5 rounded-full border-2 transition-all duration-200",
-                  i < pin.length 
-                    ? "bg-primary border-primary scale-125" 
+                  i < pin.length
+                    ? "bg-primary border-primary scale-125"
                     : "border-white/20 bg-transparent",
                   isError && "border-rose-500 bg-rose-500"
                 )}
@@ -95,8 +95,8 @@ export function LoginPage() {
                 }}
                 className={cn(
                   "h-20 rounded-2xl text-2xl font-black transition-all active:scale-90",
-                  val === "C" || val === "DEL" 
-                    ? "text-slate-400 hover:text-white" 
+                  val === "C" || val === "DEL"
+                    ? "text-slate-400 hover:text-white"
                     : "text-white bg-white/5 hover:bg-white/10 border border-white/5 shadow-sm"
                 )}
               >
