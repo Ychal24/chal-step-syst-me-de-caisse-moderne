@@ -1,6 +1,6 @@
 # Cloudflare + Convex File Manager
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Ychal24/chal-step-syst-me-de-caisse-moderne)
 
 A production-ready full-stack file management application built with Cloudflare Workers, Convex backend, and React frontend. Users can securely upload, list, view, and delete files with robust authentication (email/password with OTP verification, anonymous access).
 
@@ -89,7 +89,7 @@ API endpoints via Hono (`/api/*`): Extend `worker/userRoutes.ts`.
    ```
    Or use the button below for one-click:
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Ychal24/chal-step-syst-me-de-caisse-moderne)
 
 3. **Custom Domain**: Update `wrangler.jsonc` and run `wrangler deploy`.
 4. **Environment Variables**: Set in Cloudflare dashboard (Wrangler secrets: `wrangler secret put <KEY>`).
