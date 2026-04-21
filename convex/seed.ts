@@ -4,13 +4,23 @@ export const initData = mutation({
   handler: async (ctx) => {
     const existing = await ctx.db.query("products").first();
     const existingSellers = await ctx.db.query("sellers").first();
+    const existingSettings = await ctx.db.query("settings").first();
+    if (!existingSettings) {
+      await ctx.db.insert("settings", { key: "admin_config", adminPin: "1234" });
+    }
     if (!existingSellers) {
-      const sellers = ["Amine", "Sara", "Youssef", "Fatima", "Hassan"];
-      for (const name of sellers) {
-        await ctx.db.insert("sellers", { name, active: true });
+      const sellers = [
+        { name: "Amine", pin: "1111" },
+        { name: "Sara", pin: "2222" },
+        { name: "Youssef", pin: "3333" },
+        { name: "Fatima", pin: "4444" },
+        { name: "Hassan", pin: "5555" }
+      ];
+      for (const s of sellers) {
+        await ctx.db.insert("sellers", { name: s.name, active: true, pin: s.pin });
       }
     }
-    if (existing) return "Sellers seeded (products already present)";
+    if (existing) return "Sellers and Settings seeded (products already present)";
     const defaultProducts = [
       { name: "Cheese Burger", emoji: "🍔", category: "Burgers", price: 850, stock: 50, minStockThreshold: 10 },
       { name: "Double Cheese", emoji: "🍔", category: "Burgers", price: 1150, stock: 40, minStockThreshold: 10 },
@@ -25,15 +35,7 @@ export const initData = mutation({
       { name: "Tiramisu", emoji: "🍰", category: "Desserts", price: 450, stock: 40, minStockThreshold: 10 },
       { name: "Frites XL", emoji: "🍟", category: "Snacks", price: 400, stock: 200, minStockThreshold: 50 }
     ];
-    const fullCatalogue = [...defaultProducts];
-    for(let i=0; i < 40; i++) {
-        fullCatalogue.push({
-            ...defaultProducts[i % defaultProducts.length],
-            name: `${defaultProducts[i % defaultProducts.length].name} v${i}`,
-            stock: 20 + i
-        });
-    }
-    for (const p of fullCatalogue) {
+    for (const p of defaultProducts) {
       await ctx.db.insert("products", p);
     }
     return "Full seed successful";

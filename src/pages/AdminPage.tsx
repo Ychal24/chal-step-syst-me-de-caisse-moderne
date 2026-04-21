@@ -4,29 +4,43 @@ import { api } from "@convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { formatCurrency, formatDate } from "@/lib/format";
-import { TrendingUp, ShoppingBag, AlertTriangle, PieChart, Clock, Users, PlusCircle, UserCheck, UserMinus } from "lucide-react";
+import { TrendingUp, ShoppingBag, AlertTriangle, PieChart, Clock, Users, PlusCircle, UserCheck, UserMinus, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Id } from "@convex/_generated/dataModel";
+import { useAuthStore } from "@/store/useAuthStore";
 export function AdminPage() {
-  const stats = useQuery(api.pos.getDashboardStats);
-  const products = useQuery(api.pos.getProducts);
-  const sellers = useQuery(api.pos.getSellers);
+  const userRole = useAuthStore(s => s.userRole);
+  const stats = useQuery(api.pos.getDashboardStats, {});
+  const products = useQuery(api.pos.getProducts, {});
+  const sellers = useQuery(api.pos.getSellers, {});
   const [selectedSellerFilter, setSelectedSellerFilter] = useState<string>("all");
-  const transactions = useQuery(api.pos.getTransactions, { 
-    limit: 10, 
-    sellerId: selectedSellerFilter === "all" ? undefined : (selectedSellerFilter as Id<"sellers">) 
+  const transactions = useQuery(api.pos.getTransactions, {
+    limit: 10,
+    sellerId: selectedSellerFilter === "all" ? undefined : (selectedSellerFilter as Id<"sellers">)
   });
   const createSeller = useMutation(api.pos.createSeller);
   const updateSeller = useMutation(api.pos.updateSeller);
+  if (userRole !== 'admin') {
+    return (
+      <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-center p-8">
+        <div className="h-20 w-20 bg-rose-100 rounded-3xl flex items-center justify-center mb-6">
+          <ShieldAlert className="h-10 w-10 text-rose-600" />
+        </div>
+        <h1 className="text-3xl font-black uppercase tracking-tighter">Accès Refusé</h1>
+        <p className="text-muted-foreground mt-2 max-w-sm">Désolé, cette section est réservée exclusivement aux administrateurs du système.</p>
+      </div>
+    );
+  }
   if (!stats) return <div className="max-w-7xl mx-auto p-12">Chargement de l'analytics...</div>;
   const lowStockProducts = products?.filter(p => p.stock <= p.minStockThreshold) ?? [];
   const lowStockCount = lowStockProducts.length;
   const handleAddSeller = async () => {
     const name = prompt("Nom du nouveau vendeur :");
-    if (name) {
-      await createSeller({ name, active: true });
+    const pin = prompt("Définir un code PIN (4 chiffres) :");
+    if (name && pin) {
+      await createSeller({ name, active: true, pin });
       toast.success("Vendeur ajouté");
     }
   };
@@ -152,8 +166,8 @@ export function AdminPage() {
           </CardTitle>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-black uppercase">Filtrer par :</span>
-            <select 
-              value={selectedSellerFilter} 
+            <select
+              value={selectedSellerFilter}
               onChange={(e) => setSelectedSellerFilter(e.target.value)}
               className="bg-white/20 border-none rounded-lg text-xs font-bold px-3 py-1 outline-none text-white cursor-pointer"
             >

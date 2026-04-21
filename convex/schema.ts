@@ -13,7 +13,8 @@ const applicationTables = {
   sellers: defineTable({
     name: v.string(),
     active: v.boolean(),
-  }).index("by_active", ["active"]),
+    pin: v.string(), // Code PIN à 4 chiffres
+  }).index("by_active", ["active"]).index("by_pin", ["pin"]),
   transactions: defineTable({
     total: v.number(), // En centimes
     method: v.union(v.literal("Espèces"), v.literal("Carte")),
@@ -34,6 +35,10 @@ const applicationTables = {
     reason: v.string(),
     timestamp: v.number(),
   }).index("by_productId", ["productId"]),
+  settings: defineTable({
+    key: v.string(), // e.g., "admin_config"
+    adminPin: v.string(),
+  }).index("by_key", ["key"]),
   files: defineTable({
     userId: v.id("users"),
     storageId: v.id("_storage"),

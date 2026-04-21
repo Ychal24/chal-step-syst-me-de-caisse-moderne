@@ -8,13 +8,9 @@ interface AuthState {
   login: (role: UserRole, sellerId?: Id<"sellers"> | null) => void;
   logout: () => void;
 }
-/**
- * Simplified Auth Store for Demo Mode.
- * Adjusted logout behavior for Phase 14: maintains admin role for uninterrupted demo experience.
- */
 export const useAuthStore = create<AuthState>((set) => ({
-  isAuthenticated: true,
-  userRole: 'admin',
+  isAuthenticated: false,
+  userRole: null,
   sessionSellerId: null,
   login: (role, sellerId = null) => set({
     isAuthenticated: true,
@@ -22,8 +18,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     sessionSellerId: sellerId
   }),
   logout: () => set({
-    isAuthenticated: true,
-    userRole: 'admin',
+    isAuthenticated: false,
+    userRole: null,
     sessionSellerId: null
   }),
 }));

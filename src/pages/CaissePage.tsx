@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { ProductCard } from "@/components/pos/ProductCard";
@@ -9,17 +9,24 @@ import { RefreshCcw, PackageSearch, Search, UserCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCartStore } from "@/store/useCartStore";
+import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Id } from "@convex/_generated/dataModel";
 export function CaissePage() {
-  const products = useQuery(api.pos.getProducts);
+  const products = useQuery(api.pos.getProducts, {});
   const sellers = useQuery(api.pos.getSellers, { activeOnly: true });
   const initData = useMutation(api.seed.initData);
   const selectedSellerId = useCartStore(s => s.selectedSellerId);
   const setSellerId = useCartStore(s => s.setSellerId);
+  const sessionSellerId = useAuthStore(s => s.sessionSellerId);
   const [activeTab, setActiveTab] = useState<string>("Tous");
   const [productSearch, setProductSearch] = useState<string>("");
+  useEffect(() => {
+    if (sessionSellerId && !selectedSellerId) {
+      setSellerId(sessionSellerId);
+    }
+  }, [sessionSellerId, selectedSellerId, setSellerId]);
   const categories = useMemo(() => {
     if (!products) return ["Tous"];
     const unique = Array.from(new Set(products.map(p => p.category))).sort();

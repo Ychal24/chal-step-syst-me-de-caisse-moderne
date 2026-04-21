@@ -15,14 +15,33 @@ export const getSellers = query({
     return await ctx.db.query("sellers").collect();
   },
 });
+export const verifyPin = mutation({
+  args: { pin: v.string() },
+  handler: async (ctx, args) => {
+    // Vérifier d'abord le PIN Admin
+    const settings = await ctx.db.query("settings").withIndex("by_key", q => q.eq("key", "admin_config")).unique();
+    if (settings && settings.adminPin === args.pin) {
+      return { role: "admin" as const, sellerId: null };
+    }
+    // Vérifier les PIN des vendeurs
+    const seller = await ctx.db.query("sellers")
+      .withIndex("by_pin", q => q.eq("pin", args.pin))
+      .filter(q => q.eq(q.field("active"), true))
+      .unique();
+    if (seller) {
+      return { role: "seller" as const, sellerId: seller._id };
+    }
+    return null;
+  }
+});
 export const createSeller = mutation({
-  args: { name: v.string(), active: v.boolean() },
+  args: { name: v.string(), active: v.boolean(), pin: v.string() },
   handler: async (ctx, args) => {
     return await ctx.db.insert("sellers", args);
   },
 });
 export const updateSeller = mutation({
-  args: { id: v.id("sellers"), updates: v.object({ name: v.optional(v.string()), active: v.optional(v.boolean()) }) },
+  args: { id: v.id("sellers"), updates: v.object({ name: v.optional(v.string()), active: v.optional(v.boolean()), pin: v.optional(v.string()) }) },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.id, args.updates);
   },
@@ -76,13 +95,16 @@ export const checkout = mutation({
 export const getTransactions = query({
   args: { limit: v.optional(v.number()), sellerId: v.optional(v.id("sellers")) },
   handler: async (ctx, args) => {
-    let q = ctx.db.query("transactions");
+    let transactions;
     if (args.sellerId) {
-      q = q.withIndex("by_sellerId", (query) => query.eq("sellerId", args.sellerId!));
+      transactions = await ctx.db.query("transactions")
+        .withIndex("by_sellerId", (q) => q.eq("sellerId", args.sellerId!))
+        .take(args.limit ?? 50);
     } else {
-      q = q.order("desc");
+      transactions = await ctx.db.query("transactions")
+        .order("desc")
+        .take(args.limit ?? 50);
     }
-    const transactions = await q.take(args.limit ?? 50);
     return await Promise.all(transactions.map(async (t) => {
       const seller = await ctx.db.get(t.sellerId);
       return { ...t, sellerName: seller?.name ?? "Inconnu" };

@@ -17,12 +17,14 @@ import { AppLayout } from '@/components/layout/AppLayout'
 import { CaissePage } from '@/pages/CaissePage'
 import { StockPage } from '@/pages/StockPage'
 import { AdminPage } from '@/pages/AdminPage'
+import { LoginPage } from '@/pages/LoginPage'
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
     element: <AppLayout />,
     errorElement: <RouteErrorBoundary />,
     children: [
+      { path: "/login", element: <LoginPage /> },
       { path: "/", element: <CaissePage /> },
       { path: "/stock", element: <StockPage /> },
       { path: "/admin", element: <AdminPage /> },

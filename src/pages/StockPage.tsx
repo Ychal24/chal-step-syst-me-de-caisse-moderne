@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { ProductFormModal } from "@/components/pos/ProductFormModal";
 import { cn } from "@/lib/utils";
 export function StockPage() {
-  const products = useQuery(api.pos.getProducts);
+  const products = useQuery(api.pos.getProducts, {});
   const adjustStock = useMutation(api.pos.adjustStock);
   const deleteProduct = useMutation(api.pos.deleteProduct);
   const [searchTerm, setSearchTerm] = useState("");
@@ -64,7 +64,6 @@ export function StockPage() {
       p.stock,
       p.minStockThreshold
     ]);
-    // Utilisation du point-virgule pour une meilleure compatibilité Excel en locale FR
     const csvContent = "data:text/csv;charset=utf-8,\uFEFF"
       + [headers.join(";"), ...rows.map(r => r.join(";"))].join("\n");
     const encodedUri = encodeURI(csvContent);
