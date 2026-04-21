@@ -52,7 +52,7 @@ export function StockPage() {
   };
   const exportToCSV = () => {
     if (!products) return;
-    const headers = ["Emoji", "Nom", "Categorie", "Prix", "Stock", "Seuil"];
+    const headers = ["Emoji", "Nom", "Categorie", "Prix (DH)", "Stock", "Seuil"];
     const rows = products.map(p => [
       p.emoji,
       p.name,
@@ -91,8 +91,8 @@ export function StockPage() {
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher par nom..."
+          <Input 
+            placeholder="Rechercher par nom..." 
             className="pl-10 h-12 bg-secondary/50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -127,7 +127,7 @@ export function StockPage() {
                   <TableCell className="text-center">
                     <Badge className={cn(
                       "font-bold uppercase text-[10px] tracking-widest px-2",
-                      status === "Rupture" ? "bg-rose-500 text-white" :
+                      status === "Rupture" ? "bg-rose-500 text-white" : 
                       status === "Faible" ? "bg-amber-500 text-white" : "bg-emerald-500 text-white"
                     )}>
                       {status}
@@ -177,10 +177,10 @@ export function StockPage() {
           <div className="py-6 space-y-4">
             <div className="flex flex-col gap-2">
               <Label htmlFor="qty" className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Quantité d'ajustement</Label>
-              <Input
-                id="qty"
-                type="number"
-                value={adjustValue}
+              <Input 
+                id="qty" 
+                type="number" 
+                value={adjustValue} 
                 onChange={(e) => setAdjustValue(e.target.value)}
                 className="h-14 text-2xl font-black text-center rounded-xl"
               />

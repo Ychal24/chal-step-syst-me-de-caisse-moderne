@@ -2,6 +2,7 @@ import React from "react";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { formatCurrency, formatDate } from "@/lib/format";
 import { TrendingUp, ShoppingBag, AlertTriangle, PieChart, Clock } from "lucide-react";
@@ -17,7 +18,7 @@ export function AdminPage() {
     { title: "CA Aujourd'hui", value: formatCurrency(stats.dailyRevenue), icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
     { title: "Transactions", value: stats.dailyTransactions, icon: ShoppingBag, color: "text-indigo-500", bg: "bg-indigo-500/10" },
     { title: "Alertes Stock", value: lowStockCount, icon: AlertTriangle, color: "text-rose-500", bg: "bg-rose-500/10" },
-    { title: "Moyen / Panier", value: stats.dailyTransactions > 0 ? formatCurrency(stats.dailyRevenue / stats.dailyTransactions) : "0,00 €", icon: PieChart, color: "text-amber-500", bg: "bg-amber-500/10" },
+    { title: "Moyen / Panier", value: stats.dailyTransactions > 0 ? formatCurrency(stats.dailyRevenue / stats.dailyTransactions) : "0,00 DH", icon: PieChart, color: "text-amber-500", bg: "bg-amber-500/10" },
   ];
   const chartData = stats.topProducts.map(p => ({
     name: p.name,
@@ -58,7 +59,7 @@ export function AdminPage() {
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} strokeOpacity={0.1} />
                 <XAxis type="number" hide />
                 <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={120} fontSize={12} fontWeight="bold" />
-                <Tooltip
+                <Tooltip 
                   cursor={{ fill: 'rgba(0,0,0,0.02)' }}
                   contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
                 />
@@ -147,17 +148,6 @@ export function AdminPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
-}
-function Badge({ children, variant = "default", className }: { children: React.ReactNode, variant?: string, className?: string }) {
-  return (
-    <div className={cn(
-      "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold transition-colors",
-      variant === "outline" ? "border-2 border-foreground/10 text-foreground" : "bg-primary text-primary-foreground",
-      className
-    )}>
-      {children}
     </div>
   );
 }

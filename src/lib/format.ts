@@ -1,14 +1,16 @@
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 /**
- * Formate un prix stocké en centimes en chaîne Euro (ex: 1500 -> 15,00 €)
+ * Formate un prix stocké en centimes en Dirham Marocain (ex: 1500 -> 15,00 DH)
  */
 export function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
+  // On utilise la locale fr-MA pour le formatage des nombres
+  // Mais on gère manuellement le symbole 'DH' pour garantir la cohérence visuelle demandée '100,00 DH'
+  const amount = (cents / 100).toLocaleString("fr-MA", {
     minimumFractionDigits: 2,
-  }).format(cents / 100);
+    maximumFractionDigits: 2,
+  });
+  return `${amount} DH`;
 }
 /**
  * Formate un timestamp Convex en date lisible (ex: 14/05/2024 à 14:30)

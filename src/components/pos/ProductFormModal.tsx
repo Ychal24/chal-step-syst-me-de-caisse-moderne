@@ -142,7 +142,7 @@ export function ProductFormModal({ open, onOpenChange, product }: ProductFormMod
                 name="price"
                 render={({ field }) => (
                   <FormItem className="col-span-2">
-                    <FormLabel>Prix Vente (EUR)</FormLabel>
+                    <FormLabel>Prix Vente (DH)</FormLabel>
                     <FormControl>
                       <Input type="text" placeholder="12.50" {...field} className="rounded-xl h-12 font-mono" />
                     </FormControl>
@@ -157,11 +157,11 @@ export function ProductFormModal({ open, onOpenChange, product }: ProductFormMod
                   <FormItem>
                     <FormLabel>Stock Initial</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        {...field} 
-                        onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
-                        className="rounded-xl h-12" 
+                      <Input
+                        type="number"
+                        {...field}
+                        onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                        className="rounded-xl h-12"
                       />
                     </FormControl>
                     <FormMessage />
@@ -175,11 +175,11 @@ export function ProductFormModal({ open, onOpenChange, product }: ProductFormMod
                   <FormItem>
                     <FormLabel>Seuil d'Alerte</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        {...field} 
-                        onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
-                        className="rounded-xl h-12" 
+                      <Input
+                        type="number"
+                        {...field}
+                        onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                        className="rounded-xl h-12"
                       />
                     </FormControl>
                     <FormMessage />

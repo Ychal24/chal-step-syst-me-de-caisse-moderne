@@ -4,13 +4,15 @@ import { useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Trash2, Plus, Minus, CreditCard, Banknote, ShoppingCart, Info } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Trash2, Plus, Minus, CreditCard, Banknote, ShoppingCart } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ReceiptModal } from "./ReceiptModal";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 export function CartPanel() {
   const items = useCartStore((s) => s.items);
   const removeItem = useCartStore((s) => s.removeItem);
@@ -58,7 +60,7 @@ export function CartPanel() {
         <ScrollArea className="h-full px-6">
           <AnimatePresence initial={false}>
             {items.length === 0 ? (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="flex flex-col items-center justify-center py-24 text-muted-foreground opacity-50"
@@ -72,9 +74,9 @@ export function CartPanel() {
             ) : (
               <div className="space-y-3 py-6">
                 {items.map((item) => (
-                  <motion.div 
+                  <motion.div
                     layout
-                    key={item.productId} 
+                    key={item.productId}
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, x: 20 }}
@@ -89,28 +91,28 @@ export function CartPanel() {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center bg-secondary rounded-xl p-1 border">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7 rounded-lg hover:bg-background" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 rounded-lg hover:bg-background"
                           onClick={() => updateQuantity(item.productId, -1)}
                         >
                           <Minus className="h-3 w-3" />
                         </Button>
                         <span className="w-8 text-center font-black text-sm">{item.quantity}</span>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7 rounded-lg hover:bg-background" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 rounded-lg hover:bg-background"
                           onClick={() => updateQuantity(item.productId, 1)}
                         >
                           <Plus className="h-3 w-3" />
                         </Button>
                       </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-50 rounded-lg" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-50 rounded-lg"
                         onClick={() => removeItem(item.productId)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -185,16 +187,5 @@ export function CartPanel() {
       </Dialog>
       <ReceiptModal open={isReceiptOpen} onClose={() => setIsReceiptOpen(false)} transaction={lastTransaction} />
     </Card>
-  );
-}
-function Badge({ children, variant = "default", className }: { children: React.ReactNode, variant?: string, className?: string }) {
-  return (
-    <div className={cn(
-      "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-      variant === "outline" ? "text-foreground" : "bg-primary text-primary-foreground hover:bg-primary/80",
-      className
-    )}>
-      {children}
-    </div>
   );
 }
