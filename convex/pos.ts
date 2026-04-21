@@ -16,13 +16,22 @@ export const getSellers = query({
     return await ctx.db.query("sellers").collect();
   },
 });
+/**
+ * Validates access code (PIN).
+ * Checks 'settings' table for admin access first, then 'sellers' table.
+ */
 export const verifyPin = mutation({
   args: { pin: v.string() },
   handler: async (ctx, args) => {
-    const settings = await ctx.db.query("settings").withIndex("by_key", q => q.eq("key", "admin_config")).unique();
+    // 1. Check if the PIN matches the configured Admin PIN in settings
+    const settings = await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "admin_config"))
+      .unique();
     if (settings && settings.adminPin === args.pin) {
       return { role: "admin" as const, sellerId: null };
     }
+    // 2. Check if the PIN matches an active seller
     const seller = await ctx.db.query("sellers")
       .withIndex("by_pin", q => q.eq("pin", args.pin))
       .filter(q => q.eq(q.field("active"), true))
@@ -94,7 +103,7 @@ export const checkout = mutation({
 export const getTransactions = query({
   args: { limit: v.optional(v.number()), sellerId: v.optional(v.id("sellers")) },
   handler: async (ctx, args) => {
-    const transactions = args.sellerId 
+    const transactions = args.sellerId
       ? await ctx.db.query("transactions")
           .withIndex("by_sellerId", (q) => q.eq("sellerId", args.sellerId!))
           .take(args.limit ?? 50)

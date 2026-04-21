@@ -4,9 +4,16 @@ export const initData = mutation({
   handler: async (ctx) => {
     const existing = await ctx.db.query("products").first();
     const existingSellers = await ctx.db.query("sellers").first();
-    const existingSettings = await ctx.db.query("settings").first();
-    if (!existingSettings) {
-      await ctx.db.insert("settings", { key: "admin_config", adminPin: "1234" });
+    // Manage Admin Settings with the new "0000" PIN requirement
+    const adminSettings = await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "admin_config"))
+      .unique();
+    if (!adminSettings) {
+      await ctx.db.insert("settings", { key: "admin_config", adminPin: "0000" });
+    } else if (adminSettings.adminPin !== "0000") {
+      // Force update to the new standard PIN if it differs
+      await ctx.db.patch(adminSettings._id, { adminPin: "0000" });
     }
     if (!existingSellers) {
       const sellers = [
@@ -20,7 +27,7 @@ export const initData = mutation({
         await ctx.db.insert("sellers", { name: s.name, active: true, pin: s.pin });
       }
     }
-    if (existing) return "Sellers and Settings seeded (products already present)";
+    if (existing) return "Sellers and Settings updated/seeded (products already present)";
     const defaultProducts = [
       { name: "Cheese Burger", emoji: "🍔", category: "Burgers", price: 850, stock: 50, minStockThreshold: 10 },
       { name: "Double Cheese", emoji: "🍔", category: "Burgers", price: 1150, stock: 40, minStockThreshold: 10 },
@@ -38,6 +45,6 @@ export const initData = mutation({
     for (const p of defaultProducts) {
       await ctx.db.insert("products", p);
     }
-    return "Full seed successful";
+    return "Full seed and security update successful";
   },
 });
