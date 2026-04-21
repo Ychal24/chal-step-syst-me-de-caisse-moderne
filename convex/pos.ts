@@ -32,10 +32,11 @@ export const verifyPin = mutation({
       return { role: "admin" as const, sellerId: null };
     }
     // 2. Check if the PIN matches an active seller
-    const seller = await ctx.db.query("sellers")
+    const seller = await ctx.db
+      .query("sellers")
       .withIndex("by_pin", q => q.eq("pin", args.pin))
       .filter(q => q.eq(q.field("active"), true))
-      .unique();
+      .first();
     if (seller) {
       return { role: "seller" as const, sellerId: seller._id };
     }
