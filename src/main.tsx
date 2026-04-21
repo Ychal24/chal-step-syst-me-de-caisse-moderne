@@ -14,22 +14,21 @@ import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { convex } from '@/lib/convex';
 import '@/index.css'
 import { AppLayout } from '@/components/layout/AppLayout'
-import { HomePage } from '@/pages/HomePage'
-import { AboutPage } from '@/pages/AboutPage'
-
+import { CaissePage } from '@/pages/CaissePage'
+import { StockPage } from '@/pages/StockPage'
+import { AdminPage } from '@/pages/AdminPage'
 const queryClient = new QueryClient();
-
 const router = createBrowserRouter([
   {
-    element: <AppLayout />,
+    element: <AppLayout container />,
     errorElement: <RouteErrorBoundary />,
     children: [
-      { path: "/", element: <HomePage /> },
-      { path: "/about", element: <AboutPage /> },
+      { path: "/", element: <CaissePage /> },
+      { path: "/stock", element: <StockPage /> },
+      { path: "/admin", element: <AdminPage /> },
     ],
   },
 ]);
-
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>

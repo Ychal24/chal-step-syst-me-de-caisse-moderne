@@ -1,61 +1,30 @@
 import { mutation } from "./_generated/server";
+import { v } from "convex/values";
 export const initData = mutation({
   args: {},
   handler: async (ctx) => {
-    // 1. Manage Admin Settings (admin_config)
-    // Updated PIN to '2026' for Phase 14 specifications
-    const adminSettings = await ctx.db
-      .query("settings")
-      .withIndex("by_key", (q) => q.eq("key", "admin_config"))
-      .unique();
-    if (!adminSettings) {
-      await ctx.db.insert("settings", { key: "admin_config", adminPin: "2026" });
-    } else if (adminSettings.adminPin !== "2026") {
-      await ctx.db.patch(adminSettings._id, { adminPin: "2026" });
+    const existing = await ctx.db.query("products").first();
+    if (existing) return "Already seeded";
+    const defaultProducts = [
+      { name: "Burger Maison", emoji: "🍔", category: "Repas", price: 1250, stock: 50, minStockThreshold: 10 },
+      { name: "Pizza Regina", emoji: "🍕", category: "Repas", price: 1400, stock: 30, minStockThreshold: 5 },
+      { name: "Salade César", emoji: "🥗", category: "Repas", price: 950, stock: 20, minStockThreshold: 5 },
+      { name: "Coca-Cola", emoji: "🥤", category: "Boissons", price: 350, stock: 100, minStockThreshold: 20 },
+      { name: "Eau Minérale", emoji: "💧", category: "Boissons", price: 200, stock: 150, minStockThreshold: 30 },
+      { name: "Café Expresso", emoji: "☕", category: "Boissons", price: 180, stock: 200, minStockThreshold: 10 },
+      { name: "Muffin Choco", emoji: "🧁", category: "Desserts", price: 450, stock: 40, minStockThreshold: 8 },
+      { name: "Glace Vanille", emoji: "🍦", category: "Desserts", price: 550, stock: 25, minStockThreshold: 5 },
+      { name: "Cookie Géant", emoji: "🍪", category: "Desserts", price: 300, stock: 60, minStockThreshold: 15 },
+      { name: "Frites", emoji: "🍟", category: "Snacks", price: 400, stock: 80, minStockThreshold: 20 },
+      { name: "Nuggets (x6)", emoji: "🍗", category: "Snacks", price: 650, stock: 45, minStockThreshold: 10 },
+      { name: "Nachos", emoji: "🌮", category: "Snacks", price: 700, stock: 30, minStockThreshold: 5 },
+      { name: "Pasta Pesto", emoji: "🍝", category: "Repas", price: 1100, stock: 25, minStockThreshold: 5 },
+      { name: "Hot Dog", emoji: "🌭", category: "Snacks", price: 550, stock: 40, minStockThreshold: 10 },
+      { name: "Donut", emoji: "🍩", category: "Desserts", price: 250, stock: 50, minStockThreshold: 10 },
+    ] as const;
+    for (const p of defaultProducts) {
+      await ctx.db.insert("products", p);
     }
-    // 2. Manage Sellers
-    const existingSellers = await ctx.db.query("sellers").collect();
-    if (existingSellers.length === 0) {
-      // Create default sellers with empty PINs for quick demo access
-      const sellers = [
-        { name: "Amine", pin: "" },
-        { name: "Sara", pin: "" },
-        { name: "Youssef", pin: "" },
-        { name: "Fatima", pin: "" },
-        { name: "Hassan", pin: "" }
-      ];
-      for (const s of sellers) {
-        await ctx.db.insert("sellers", { name: s.name, active: true, pin: s.pin });
-      }
-    } else {
-      // Patch existing sellers to "" for standardization
-      for (const s of existingSellers) {
-        if (s.pin !== "") {
-          await ctx.db.patch(s._id, { pin: "" });
-        }
-      }
-    }
-    // 3. Manage Products
-    const existingProducts = await ctx.db.query("products").first();
-    if (!existingProducts) {
-      const defaultProducts = [
-        { name: "Cheese Burger", emoji: "🍔", category: "Burgers", price: 850, stock: 50, minStockThreshold: 10 },
-        { name: "Double Cheese", emoji: "🍔", category: "Burgers", price: 1150, stock: 40, minStockThreshold: 10 },
-        { name: "Chicken Burger", emoji: "🍗", category: "Burgers", price: 950, stock: 45, minStockThreshold: 10 },
-        { name: "Veggie Burger", emoji: "🥬", category: "Burgers", price: 850, stock: 30, minStockThreshold: 5 },
-        { name: "Margherita", emoji: "🍕", category: "Pizzas", price: 750, stock: 25, minStockThreshold: 5 },
-        { name: "Regina", emoji: "🍕", category: "Pizzas", price: 950, stock: 20, minStockThreshold: 5 },
-        { name: "Expresso", emoji: "☕", category: "Caféteria", price: 180, stock: 500, minStockThreshold: 50 },
-        { name: "Coca-Cola", emoji: "🥤", category: "Sodas", price: 350, stock: 200, minStockThreshold: 50 },
-        { name: "Jus d'Orange", emoji: "🍊", category: "Jus", price: 450, stock: 100, minStockThreshold: 20 },
-        { name: "Eau 50cl", emoji: "💧", category: "Eaux", price: 200, stock: 500, minStockThreshold: 100 },
-        { name: "Tiramisu", emoji: "🍰", category: "Desserts", price: 450, stock: 40, minStockThreshold: 10 },
-        { name: "Frites XL", emoji: "🍟", category: "Snacks", price: 400, stock: 200, minStockThreshold: 50 }
-      ];
-      for (const p of defaultProducts) {
-        await ctx.db.insert("products", p);
-      }
-    }
-    return "Security standardization and seed successful";
+    return "Success";
   },
 });
