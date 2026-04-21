@@ -3,14 +3,15 @@ export const initData = mutation({
   args: {},
   handler: async (ctx) => {
     // 1. Manage Admin Settings (admin_config)
+    // Updated PIN to '2026' for Phase 14 specifications
     const adminSettings = await ctx.db
       .query("settings")
       .withIndex("by_key", (q) => q.eq("key", "admin_config"))
       .unique();
     if (!adminSettings) {
-      await ctx.db.insert("settings", { key: "admin_config", adminPin: "0000" });
-    } else if (adminSettings.adminPin !== "0000") {
-      await ctx.db.patch(adminSettings._id, { adminPin: "0000" });
+      await ctx.db.insert("settings", { key: "admin_config", adminPin: "2026" });
+    } else if (adminSettings.adminPin !== "2026") {
+      await ctx.db.patch(adminSettings._id, { adminPin: "2026" });
     }
     // 2. Manage Sellers
     const existingSellers = await ctx.db.query("sellers").collect();

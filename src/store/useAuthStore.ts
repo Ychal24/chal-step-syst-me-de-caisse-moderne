@@ -10,7 +10,7 @@ interface AuthState {
 }
 /**
  * Simplified Auth Store for Demo Mode.
- * Defaulting to authenticated admin state to remove entry barriers.
+ * Adjusted logout behavior for Phase 14: maintains admin role for uninterrupted demo experience.
  */
 export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: true,
@@ -22,8 +22,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     sessionSellerId: sellerId
   }),
   logout: () => set({
-    isAuthenticated: false,
-    userRole: null,
+    isAuthenticated: true,
+    userRole: 'admin',
     sessionSellerId: null
   }),
 }));
