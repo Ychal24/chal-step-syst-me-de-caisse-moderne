@@ -1,10 +1,54 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation } from "./_generated/server";
-import { api, internal } from "./_generated/api";
+import { mutation, query } from "./_generated/server";
 export const getProducts = query({
   args: {},
   handler: async (ctx) => {
     return await ctx.db.query("products").collect();
+  },
+});
+export const createProduct = mutation({
+  args: {
+    name: v.string(),
+    emoji: v.string(),
+    category: v.union(
+      v.literal("Repas"),
+      v.literal("Boissons"),
+      v.literal("Desserts"),
+      v.literal("Snacks")
+    ),
+    price: v.number(), // En centimes
+    stock: v.number(),
+    minStockThreshold: v.number(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("products", args);
+  },
+});
+export const updateProduct = mutation({
+  args: {
+    id: v.id("products"),
+    updates: v.object({
+      name: v.optional(v.string()),
+      emoji: v.optional(v.string()),
+      category: v.optional(v.union(
+        v.literal("Repas"),
+        v.literal("Boissons"),
+        v.literal("Desserts"),
+        v.literal("Snacks")
+      )),
+      price: v.optional(v.number()),
+      stock: v.optional(v.number()),
+      minStockThreshold: v.optional(v.number()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, args.updates);
+  },
+});
+export const deleteProduct = mutation({
+  args: { id: v.id("products") },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.id);
   },
 });
 export const checkout = mutation({
@@ -26,11 +70,9 @@ export const checkout = mutation({
       if (product.stock < item.quantity) {
         throw new Error(`Stock insuffisant pour ${product.name}`);
       }
-      // Mettre à jour le stock
       await ctx.db.patch(item.productId, {
         stock: product.stock - item.quantity,
       });
-      // Enregistrer l'ajustement
       await ctx.db.insert("stock_adjustments", {
         productId: item.productId,
         quantity: -item.quantity,
@@ -50,7 +92,13 @@ export const checkout = mutation({
       items: saleItems,
       timestamp: Date.now(),
     });
-    return transactionId;
+    return { 
+      transactionId, 
+      items: saleItems, 
+      method: args.method, 
+      total: args.total, 
+      timestamp: Date.now() 
+    };
   },
 });
 export const adjustStock = mutation({
@@ -93,8 +141,6 @@ export const getDashboardStats = query({
       .collect();
     const revenue = todayTransactions.reduce((acc, t) => acc + t.total, 0);
     const count = todayTransactions.length;
-    // Top produits (calculé sur toutes les transactions pour l'exemple)
-    // Dans une vraie app, on ferait ça plus efficacement
     const allRecent = await ctx.db.query("transactions").order("desc").take(100);
     const productCounts: Record<string, { name: string; qty: number }> = {};
     allRecent.forEach(t => {

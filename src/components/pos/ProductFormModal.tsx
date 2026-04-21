@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -6,14 +6,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useMutation, useQuery } from "convex/react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { toast } from "sonner";
 import { Doc } from "@convex/_generated/dataModel";
+const CATEGORIES = ["Repas", "Boissons", "Desserts", "Snacks"] as const;
 const formSchema = z.object({
   name: z.string().min(2, "Le nom est trop court"),
   emoji: z.string().min(1, "Emoji requis"),
-  category: z.string().min(1, "Catégorie requise"),
+  category: z.enum(CATEGORIES),
   price: z.string().regex(/^\d+(\.\d{1,2})?$/, "Format de prix invalide"),
   stock: z.number().min(0, "Le stock ne peut être négatif"),
   minStockThreshold: z.number().min(0, "Le seuil ne peut être négatif"),
@@ -24,19 +26,14 @@ interface ProductFormModalProps {
   product?: Doc<"products"> | null;
 }
 export function ProductFormModal({ open, onOpenChange, product }: ProductFormModalProps) {
-  const products = useQuery(api.pos.getProducts);
   const createProduct = useMutation(api.pos.createProduct);
   const updateProduct = useMutation(api.pos.updateProduct);
-  const existingCategories = useMemo(() => {
-    if (!products) return [];
-    return Array.from(new Set(products.map(p => p.category))).sort();
-  }, [products]);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       emoji: "🍔",
-      category: "",
+      category: "Repas",
       price: "0.00",
       stock: 0,
       minStockThreshold: 5,
@@ -56,7 +53,7 @@ export function ProductFormModal({ open, onOpenChange, product }: ProductFormMod
       form.reset({
         name: "",
         emoji: "🍔",
-        category: "",
+        category: "Repas",
         price: "0.00",
         stock: 0,
         minStockThreshold: 5,
@@ -124,16 +121,18 @@ export function ProductFormModal({ open, onOpenChange, product }: ProductFormMod
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Catégorie</FormLabel>
-                    <FormControl>
-                      <div className="space-y-2">
-                        <Input list="categories-list" placeholder="ex: Burgers" {...field} className="rounded-xl h-12" />
-                        <datalist id="categories-list">
-                          {existingCategories.map(cat => (
-                            <option key={cat} value={cat} />
-                          ))}
-                        </datalist>
-                      </div>
-                    </FormControl>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="rounded-xl h-12">
+                          <SelectValue placeholder="Catégorie" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {CATEGORIES.map((cat) => (
+                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -143,7 +142,7 @@ export function ProductFormModal({ open, onOpenChange, product }: ProductFormMod
                 name="price"
                 render={({ field }) => (
                   <FormItem className="col-span-2">
-                    <FormLabel>Prix Vente (DH)</FormLabel>
+                    <FormLabel>Prix Vente (EUR)</FormLabel>
                     <FormControl>
                       <Input type="text" placeholder="12.50" {...field} className="rounded-xl h-12 font-mono" />
                     </FormControl>
@@ -158,11 +157,11 @@ export function ProductFormModal({ open, onOpenChange, product }: ProductFormMod
                   <FormItem>
                     <FormLabel>Stock Initial</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        {...field}
-                        onChange={e => field.onChange(parseInt(e.target.value) || 0)}
-                        className="rounded-xl h-12"
+                      <Input 
+                        type="number" 
+                        {...field} 
+                        onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
+                        className="rounded-xl h-12" 
                       />
                     </FormControl>
                     <FormMessage />
@@ -176,11 +175,11 @@ export function ProductFormModal({ open, onOpenChange, product }: ProductFormMod
                   <FormItem>
                     <FormLabel>Seuil d'Alerte</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        {...field}
-                        onChange={e => field.onChange(parseInt(e.target.value) || 0)}
-                        className="rounded-xl h-12"
+                      <Input 
+                        type="number" 
+                        {...field} 
+                        onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
+                        className="rounded-xl h-12" 
                       />
                     </FormControl>
                     <FormMessage />
