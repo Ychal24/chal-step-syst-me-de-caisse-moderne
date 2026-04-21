@@ -15,22 +15,22 @@ export const initData = mutation({
     // 2. Manage Sellers
     const existingSellers = await ctx.db.query("sellers").collect();
     if (existingSellers.length === 0) {
-      // Create default sellers with standard "0000" PIN
+      // Create default sellers with empty PINs for quick demo access
       const sellers = [
-        { name: "Amine", pin: "0000" },
-        { name: "Sara", pin: "0000" },
-        { name: "Youssef", pin: "0000" },
-        { name: "Fatima", pin: "0000" },
-        { name: "Hassan", pin: "0000" }
+        { name: "Amine", pin: "" },
+        { name: "Sara", pin: "" },
+        { name: "Youssef", pin: "" },
+        { name: "Fatima", pin: "" },
+        { name: "Hassan", pin: "" }
       ];
       for (const s of sellers) {
         await ctx.db.insert("sellers", { name: s.name, active: true, pin: s.pin });
       }
     } else {
-      // Patch existing sellers to "0000" for standardization
+      // Patch existing sellers to "" for standardization
       for (const s of existingSellers) {
-        if (s.pin !== "0000") {
-          await ctx.db.patch(s._id, { pin: "0000" });
+        if (s.pin !== "") {
+          await ctx.db.patch(s._id, { pin: "" });
         }
       }
     }

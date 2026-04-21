@@ -32,6 +32,7 @@ export const verifyPin = mutation({
       return { role: "admin" as const, sellerId: null };
     }
     // 2. Check if the PIN matches an active seller
+    // Using .first() ensures we get the first matching seller without triggering MultipleDocumentsError
     const seller = await ctx.db
       .query("sellers")
       .withIndex("by_pin", q => q.eq("pin", args.pin))

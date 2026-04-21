@@ -4,7 +4,7 @@ import { api } from "@convex/_generated/api";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { UtensilsCrossed, Delete, Lock } from "lucide-react";
+import { UtensilsCrossed, Delete, Lock, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -29,7 +29,6 @@ export function LoginPage() {
     setIsError(false);
   }, []);
   const handleSubmit = useCallback(async () => {
-    if (pin.length < 4) return;
     try {
       const result = await verifyPin({ pin });
       if (result) {
@@ -46,11 +45,12 @@ export function LoginPage() {
     }
   }, [pin, verifyPin, login, navigate]);
   useEffect(() => {
+    // Auto-submit only for 4-digit codes (admin "0000")
     if (pin.length === 4) {
       handleSubmit();
     }
   }, [pin, handleSubmit]);
-  const numpad = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", "DEL"];
+  const numpad = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "DEL", "0", "OK"];
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
       <motion.div
@@ -89,18 +89,20 @@ export function LoginPage() {
                 key={val}
                 variant="ghost"
                 onClick={() => {
-                  if (val === "C") handleClear();
+                  if (val === "OK") handleSubmit();
                   else if (val === "DEL") handleDelete();
                   else handlePress(val);
                 }}
                 className={cn(
                   "h-20 rounded-2xl text-2xl font-black transition-all active:scale-90",
-                  val === "C" || val === "DEL"
+                  val === "OK"
+                    ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+                    : val === "DEL"
                     ? "text-slate-400 hover:text-white"
                     : "text-white bg-white/5 hover:bg-white/10 border border-white/5 shadow-sm"
                 )}
               >
-                {val === "DEL" ? <Delete className="h-6 w-6" /> : val}
+                {val === "DEL" ? <Delete className="h-6 w-6" /> : val === "OK" ? <CheckCircle2 className="h-7 w-7" /> : val}
               </Button>
             ))}
           </div>
