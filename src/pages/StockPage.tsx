@@ -23,7 +23,7 @@ export function StockPage() {
   const [isAdjustOpen, setIsAdjustOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<any>(null);
-  const filtered = products?.filter(p => 
+  const filtered = products?.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.category.toLowerCase().includes(searchTerm.toLowerCase())
   ) ?? [];
@@ -57,15 +57,16 @@ export function StockPage() {
     if (!products) return;
     const headers = ["Emoji", "Nom", "Categorie", "Prix (DH)", "Stock", "Seuil"];
     const rows = products.map(p => [
-      p.emoji,
-      p.name,
-      p.category,
+      `"${p.emoji}"`,
+      `"${p.name.replace(/"/g, '""')}"`,
+      `"${p.category.replace(/"/g, '""')}"`,
       (p.price / 100).toFixed(2),
       p.stock,
       p.minStockThreshold
     ]);
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    // Utilisation du point-virgule pour une meilleure compatibilité Excel en locale FR
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF"
+      + [headers.join(";"), ...rows.map(r => r.join(";"))].join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -130,7 +131,7 @@ export function StockPage() {
                   <TableCell className="text-center">
                     <Badge className={cn(
                       "font-bold uppercase text-[10px] tracking-widest px-2",
-                      status === "Rupture" ? "bg-rose-500 text-white" : 
+                      status === "Rupture" ? "bg-rose-500 text-white" :
                       status === "Faible" ? "bg-amber-500 text-white" : "bg-emerald-500 text-white"
                     )}>
                       {status}

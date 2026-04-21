@@ -36,10 +36,10 @@ export function CaissePage() {
     }
   };
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12 h-screen overflow-hidden flex flex-col">
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 flex-1 overflow-hidden">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-screen max-h-screen overflow-hidden flex flex-col py-6 md:py-8 lg:py-10">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 flex-1 overflow-hidden min-h-0">
         <div className="md:col-span-8 flex flex-col h-full overflow-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 shrink-0">
             <div>
               <h1 className="text-4xl md:text-5xl font-black text-foreground tracking-tighter uppercase">Ventes Directes</h1>
               <p className="text-muted-foreground font-medium mt-1">Gérez vos encaissements rapidement.</p>
@@ -61,7 +61,7 @@ export function CaissePage() {
               )}
             </div>
           </div>
-          <div className="mb-6 relative">
+          <div className="mb-6 relative shrink-0">
              <ScrollArea className="w-full whitespace-nowrap bg-muted/50 p-1.5 rounded-2xl border">
                 <div className="flex w-max gap-2 p-0.5">
                   {categories.map(cat => (
@@ -70,8 +70,8 @@ export function CaissePage() {
                       onClick={() => setActiveTab(cat)}
                       className={cn(
                         "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
-                        activeTab === cat 
-                          ? "bg-background text-primary shadow-soft" 
+                        activeTab === cat
+                          ? "bg-background text-primary shadow-soft"
                           : "text-muted-foreground hover:bg-background/50"
                       )}
                     >
@@ -82,7 +82,7 @@ export function CaissePage() {
                 <ScrollBar orientation="horizontal" />
              </ScrollArea>
           </div>
-          <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar pb-10">
+          <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar min-h-0 pb-6">
             {!products ? (
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {[...Array(8)].map((_, i) => (
@@ -96,7 +96,7 @@ export function CaissePage() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-[60%] text-muted-foreground border-4 border-dashed rounded-[3rem] p-12 bg-secondary/20">
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground border-4 border-dashed rounded-[3rem] p-12 bg-secondary/20">
                 <PackageSearch className="h-16 w-16 mb-4 opacity-20" />
                 <p className="text-2xl font-black tracking-tight uppercase opacity-50">Aucun produit</p>
                 <p className="text-sm font-medium mt-2">Affinez votre recherche ou changez de catégorie.</p>
@@ -104,7 +104,7 @@ export function CaissePage() {
             )}
           </div>
         </div>
-        <div className="md:col-span-4 h-full pb-8 md:pb-0">
+        <div className="md:col-span-4 h-full min-h-0">
           <CartPanel />
         </div>
       </div>

@@ -20,7 +20,7 @@ import { AdminPage } from '@/pages/AdminPage'
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
-    element: <AppLayout container />,
+    element: <AppLayout />,
     errorElement: <RouteErrorBoundary />,
     children: [
       { path: "/", element: <CaissePage /> },
