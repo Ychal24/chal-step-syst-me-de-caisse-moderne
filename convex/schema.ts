@@ -10,9 +10,14 @@ const applicationTables = {
     stock: v.number(),
     minStockThreshold: v.number(),
   }).index("by_category", ["category"]),
+  sellers: defineTable({
+    name: v.string(),
+    active: v.boolean(),
+  }).index("by_active", ["active"]),
   transactions: defineTable({
     total: v.number(), // En centimes
     method: v.union(v.literal("Espèces"), v.literal("Carte")),
+    sellerId: v.id("sellers"),
     items: v.array(
       v.object({
         productId: v.id("products"),
@@ -22,7 +27,7 @@ const applicationTables = {
       })
     ),
     timestamp: v.number(),
-  }).index("by_timestamp", ["timestamp"]),
+  }).index("by_timestamp", ["timestamp"]).index("by_sellerId", ["sellerId"]),
   stock_adjustments: defineTable({
     productId: v.id("products"),
     quantity: v.number(), // positif pour ajout, négatif pour retrait

@@ -5,13 +5,19 @@ import { ProductCard } from "@/components/pos/ProductCard";
 import { CartPanel } from "@/components/pos/CartPanel";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Sparkles, RefreshCcw, PackageSearch, Search } from "lucide-react";
+import { RefreshCcw, PackageSearch, Search, UserCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCartStore } from "@/store/useCartStore";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Id } from "@convex/_generated/dataModel";
 export function CaissePage() {
   const products = useQuery(api.pos.getProducts);
+  const sellers = useQuery(api.pos.getSellers, { activeOnly: true });
   const initData = useMutation(api.seed.initData);
+  const selectedSellerId = useCartStore(s => s.selectedSellerId);
+  const setSellerId = useCartStore(s => s.setSellerId);
   const [activeTab, setActiveTab] = useState<string>("Tous");
   const [productSearch, setProductSearch] = useState<string>("");
   const categories = useMemo(() => {
@@ -42,7 +48,19 @@ export function CaissePage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 shrink-0">
             <div>
               <h1 className="text-4xl md:text-5xl font-black text-foreground tracking-tighter uppercase">Ventes Directes</h1>
-              <p className="text-muted-foreground font-medium mt-1">Gérez vos encaissements rapidement.</p>
+              <div className="flex items-center gap-2 mt-1">
+                <UserCircle className="h-4 w-4 text-primary" />
+                <Select value={selectedSellerId || ""} onValueChange={(v) => setSellerId(v as Id<"sellers">)}>
+                  <SelectTrigger className="h-8 w-[180px] bg-transparent border-none p-0 focus:ring-0 text-sm font-bold text-muted-foreground">
+                    <SelectValue placeholder="Choisir Vendeur" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {sellers?.map(s => (
+                      <SelectItem key={s._id} value={s._id}>{s.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative w-full sm:w-64">

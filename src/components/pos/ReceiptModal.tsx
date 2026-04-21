@@ -1,7 +1,7 @@
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Printer, X, CheckCircle2 } from "lucide-react";
+import { Printer, X, CheckCircle2, User } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
 interface ReceiptModalProps {
   open: boolean;
@@ -11,6 +11,7 @@ interface ReceiptModalProps {
     total: number;
     method: string;
     timestamp: number;
+    sellerName: string;
   } | null;
 }
 export function ReceiptModal({ open, onClose, transaction }: ReceiptModalProps) {
@@ -29,10 +30,14 @@ export function ReceiptModal({ open, onClose, transaction }: ReceiptModalProps) 
             <h2 className="text-2xl font-black uppercase tracking-tighter">Chal Step POS</h2>
             <p className="text-xs text-muted-foreground uppercase tracking-widest mt-1">Reçu de Vente Officiel</p>
           </div>
-          <div className="space-y-1 text-xs mb-6 border-b border-dashed pb-4">
+          <div className="space-y-1 text-[10px] mb-6 border-b border-dashed pb-4">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Date :</span>
               <span className="font-bold">{formatDate(transaction.timestamp)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Vendeur :</span>
+              <span className="font-black uppercase tracking-tight">{transaction.sellerName}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Paiement :</span>

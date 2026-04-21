@@ -5,7 +5,7 @@ import { api } from "@convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Plus, Minus, CreditCard, Banknote, ShoppingCart } from "lucide-react";
+import { Trash2, Plus, Minus, CreditCard, Banknote, ShoppingCart, UserX } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,10 +14,11 @@ import { ReceiptModal } from "./ReceiptModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 export function CartPanel() {
-  const items = useCartStore((s) => s.items);
-  const removeItem = useCartStore((s) => s.removeItem);
-  const updateQuantity = useCartStore((s) => s.updateQuantity);
-  const clearCart = useCartStore((s) => s.clearCart);
+  const items = useCartStore(s => s.items);
+  const selectedSellerId = useCartStore(s => s.selectedSellerId);
+  const removeItem = useCartStore(s => s.removeItem);
+  const updateQuantity = useCartStore(s => s.updateQuantity);
+  const clearCart = useCartStore(s => s.clearCart);
   const checkout = useMutation(api.pos.checkout);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -26,12 +27,17 @@ export function CartPanel() {
   const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const totalArticles = items.reduce((acc, i) => acc + i.quantity, 0);
   const handleCheckout = async (method: "Espèces" | "Carte") => {
+    if (!selectedSellerId) {
+      toast.error("Veuillez sélectionner un vendeur.");
+      return;
+    }
     setIsProcessing(true);
     try {
       const result = await checkout({
         items: items.map(i => ({ productId: i.productId, quantity: i.quantity })),
         method,
-        total
+        total,
+        sellerId: selectedSellerId
       });
       setLastTransaction(result);
       toast.success("Vente réussie !");
@@ -129,16 +135,22 @@ export function CartPanel() {
         </ScrollArea>
       </CardContent>
       <CardFooter className="flex-col gap-4 p-8 bg-background border-t shadow-[0_-10px_20px_rgba(0,0,0,0.02)] shrink-0">
+        {!selectedSellerId && items.length > 0 && (
+          <div className="w-full flex items-center gap-2 p-3 bg-rose-50 border border-rose-100 text-rose-600 rounded-xl mb-2 animate-bounce">
+            <UserX className="h-4 w-4" />
+            <span className="text-xs font-bold uppercase tracking-tight">Sélectionner un vendeur en haut</span>
+          </div>
+        )}
         <div className="flex justify-between w-full items-end pb-2">
           <div className="flex flex-col">
             <span className="text-xs uppercase font-black tracking-widest text-muted-foreground">À percevoir</span>
             <span className="text-4xl font-black tracking-tighter text-foreground">{formatCurrency(total)}</span>
           </div>
           {total > 0 && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={clearCart} 
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearCart}
               className="text-rose-500 hover:bg-rose-50 rounded-lg h-10 px-4 font-bold uppercase text-[10px] tracking-widest"
             >
               Vider
@@ -147,10 +159,10 @@ export function CartPanel() {
         </div>
         <Button
           className="w-full h-18 text-2xl font-black rounded-2xl btn-gradient shadow-primary active:scale-[0.98] transition-transform disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
-          disabled={items.length === 0}
+          disabled={items.length === 0 || !selectedSellerId}
           onClick={() => setIsCheckoutOpen(true)}
         >
-          {items.length === 0 ? "Panier Vide" : `Payer ${formatCurrency(total)}`}
+          {items.length === 0 ? "Panier Vide" : !selectedSellerId ? "Vendeur requis" : `Payer ${formatCurrency(total)}`}
         </Button>
       </CardFooter>
       <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>

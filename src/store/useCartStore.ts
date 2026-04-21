@@ -10,13 +10,16 @@ export interface CartItem {
 }
 interface CartState {
   items: CartItem[];
+  selectedSellerId: Id<"sellers"> | null;
   addItem: (product: { _id: Id<"products">; name: string; emoji: string; price: number; stock: number }) => void;
   removeItem: (productId: Id<"products">) => void;
   updateQuantity: (productId: Id<"products">, delta: number) => void;
   clearCart: () => void;
+  setSellerId: (sellerId: Id<"sellers"> | null) => void;
 }
 export const useCartStore = create<CartState>((set) => ({
   items: [],
+  selectedSellerId: null,
   addItem: (product) => set((state) => {
     const existing = state.items.find((i) => i.productId === product._id);
     if (existing) {
@@ -53,4 +56,5 @@ export const useCartStore = create<CartState>((set) => ({
     }),
   })),
   clearCart: () => set({ items: [] }),
+  setSellerId: (sellerId) => set({ selectedSellerId: sellerId }),
 }));
